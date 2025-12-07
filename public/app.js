@@ -1,3 +1,4 @@
+// Отримання посилань на елементи DOM
 const postsList = document.getElementById('posts-list');
 const postForm = document.getElementById('post-form');
 const postIdInput = document.getElementById('post-id');
@@ -16,7 +17,7 @@ async function fetchPosts() {
     try {
         const response = await fetch('/api/posts');
         const data = await response.json();
-        renderPosts(data);
+        renderPosts(data); // Передача даних для відображення
     } catch (error) {
         console.error('Помилка при завантаженні постів:', error);
         postsList.innerHTML = '<p>Не вдалося завантажити пости.</p>';
@@ -24,26 +25,23 @@ async function fetchPosts() {
 }
 
 /**
- * Надсилає запит на створення або оновлення поста.
- * @param {object} postData - Дані поста.
- * @param {string | null} postId - ID поста для оновлення або null для створення.
+ * Надсилає запит на створення (POST) або оновлення (PUT) поста.
  */
 async function createOrUpdatePost(postData, postId = null) {
+    // Визначення методу та URL залежно від наявності ID
     const method = postId ? 'PUT' : 'POST';
     const url = postId ? `/api/posts/${postId}` : '/api/posts';
 
     try {
         const response = await fetch(url, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         });
 
         if (response.ok) {
-            resetForm();
-            fetchPosts(); // Оновити список
+            resetForm(); // Скидання форми після успіху
+            fetchPosts(); // Оновлення списку
         } else {
             const error = await response.json();
             alert(`Помилка: ${error.message || 'Невідома помилка'}`);
@@ -54,8 +52,7 @@ async function createOrUpdatePost(postData, postId = null) {
 }
 
 /**
- * Надсилає запит на видалення поста за ID.
- * @param {string} id - MongoDB _id поста.
+ * Надсилає запит на видалення поста за ID (DELETE).
  */
 async function deletePost(id) {
     if (!confirm('Ви впевнені, що хочете видалити цей пост?')) {
@@ -67,7 +64,7 @@ async function deletePost(id) {
             method: 'DELETE',
         });
 
-        if (response.status === 204) {
+        if (response.status === 204) { // 204 No Content означає успіх
             fetchPosts(); 
         } else {
             const error = await response.json();
@@ -79,8 +76,7 @@ async function deletePost(id) {
 }
 
 /**
- * Отримує дані одного поста для заповнення форми редагування.
- * @param {string} id - MongoDB _id поста.
+ * Отримує дані одного поста для заповнення форми редагування (GET).
  */
 async function fetchPostForEdit(id) {
     try {
@@ -88,11 +84,10 @@ async function fetchPostForEdit(id) {
         
         if (response.ok) {
             const post = await response.json();
-            fillEditForm(post); 
+            fillEditForm(post); // Заповнення форми
         } else if (response.status === 404) {
-            // Якщо пост не знайдено (наприклад, вже видалений)
             alert('Пост для редагування не знайдено. Оновіть сторінку.');
-            fetchPosts(); // Оновити список, щоб прибрати видалений пост
+            fetchPosts(); // Оновлення списку, якщо пост вже видалений
         } else {
             alert('Не вдалося завантажити дані поста для редагування.');
         }
@@ -106,16 +101,15 @@ async function fetchPostForEdit(id) {
 
 /**
  * Заповнює форму даними поста для редагування.
- * @param {object} post - Об'єкт поста.
  */
 function fillEditForm(post) {
-    postIdInput.value = post._id; 
+    postIdInput.value = post._id; // Запис ID для подальшого PUT-запиту
     titleInput.value = post.title;
     descriptionInput.value = post.description;
     authorInput.value = post.author;
     submitButton.textContent = 'Оновити Пост';
     cancelButton.style.display = 'block';
-    window.scrollTo(0, 0); 
+    window.scrollTo(0, 0); // Прокрутка до форми
 }
 
 /**
@@ -129,8 +123,7 @@ function resetForm() {
 }
 
 /**
- * Генерує HTML-відображення списку постів.
- * @param {Array<object>} posts - Масив об'єктів постів.
+ * Генерує HTML-відображення списку постів (картки).
  */
 function renderPosts(posts) {
     postsList.innerHTML = '';
@@ -143,7 +136,7 @@ function renderPosts(posts) {
         const postCard = document.createElement('div');
         postCard.className = 'post-card';
         
-        // Використовуємо data-id для передачі ID в обробники подій
+        // Використання data-id для надійного зчитування MongoDB ID
         postCard.innerHTML = `
             <h3>${post.title}</h3>
             <p><strong>Автор:</strong> ${post.author}</p>
@@ -161,7 +154,7 @@ function renderPosts(posts) {
 
 // --- ОБРОБНИКИ ПОДІЙ ---
 
-// 1. Обробка відправки форми (Створити/Оновити)
+// 1. Обробка відправки форми (створення/оновлення)
 postForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = postIdInput.value; 
@@ -178,26 +171,22 @@ postForm.addEventListener('submit', (e) => {
 cancelButton.addEventListener('click', resetForm);
 
 
-// 3. ГЛОБАЛЬНИЙ ОБРОБНИК для Редагування та Видалення
+// 3. Ініціалізація та ГЛОБАЛЬНИЙ ОБРОБНИК для кнопок Редагування/Видалення
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts(); // 1. Завантажити пости
     
-    // 2. Встановлюємо обробник кліків на батьківському контейнері postsList
+    // 2. Делегування подій: обробка кліків на елементах всередині postsList
     postsList.addEventListener('click', (e) => {
         const target = e.target;
-        // Зчитуємо ID з data-атрибуту
-        const postId = target.dataset.id;
+        const postId = target.dataset.id; // Зчитування ID з атрибута data-id
         
-        // Перевіряємо, чи клік був на кнопці з data-id
-        if (!postId) return; 
+        if (!postId) return; // Вихід, якщо клік не на кнопці з ID
 
         if (target.classList.contains('delete-btn')) {
-            // ЛОГІКА ВИДАЛЕННЯ
-            deletePost(postId);
+            deletePost(postId); // Виклик функції видалення
             
         } else if (target.classList.contains('edit-btn')) {
-            // ЛОГІКА РЕДАГУВАННЯ
-            fetchPostForEdit(postId); 
+            fetchPostForEdit(postId); // Завантаження даних для форми редагування
         }
     });
 });
