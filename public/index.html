@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Post Blog - Управління Постами</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="welcome-box">
+        <h2>👋 Ласкаво просимо до Post Blog Management!</h2>
+        <p>Це простий інструмент для управління контентом вашого блогу. Тут ви можете:</p>
+        <ul>
+            <li>**Створювати** нові статті (пости).</li>
+            <li>**Переглядати** всі існуючі пости у списку нижче.</li>
+            <li>**Редагувати** будь-який пост, натиснувши відповідну кнопку.</li>
+            <li>**Видаляти** застарілі або небажані записи.</li>
+        </ul>
+        <p>Усі дані зберігаються у базі даних MongoDB.</p>
+    </div>
+    <h1>📝 Управління Постами</h1>
+    
+    <div class="form-container">
+        <h2>Створити/Редагувати Пост</h2>
+        <form id="post-form">
+            <input type="hidden" id="post-id" value="">
+
+            <label for="title">Заголовок:</label>
+            <input type="text" id="title" required><br>
+
+            <label for="author">Автор:</label>
+            <input type="text" id="author" required><br>
+
+            <label for="description">Опис:</label>
+            <textarea id="description" required></textarea><br>
+
+            <button type="submit">Створити Пост</button>
+            <button type="button" id="cancel-edit" style="display: none;">Скасувати</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div class="posts-list-container">
+        <h2>Список Постів</h2>
+        <div id="posts-list">
+            </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

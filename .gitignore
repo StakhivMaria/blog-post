@@ -1,0 +1,9 @@
+# Залежності Node
+/node_modules
+
+# Змінні оточення
+.env
+
+# Логи та тимчасові файли
+npm-debug.log*
+yarn-debug.log*
